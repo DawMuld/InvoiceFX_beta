@@ -5,10 +5,14 @@
  */
 package com.gui.laf;
 
+import java.io.File;
+import java.io.FileInputStream;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.Border;
 import javafx.scene.paint.Color;
@@ -75,6 +79,38 @@ public class ControlBuilder {
                 button.setFont(BUTTON_HOVER);
             }
         });
+        return button;
+    }
+
+    public static Button createSaveButton() {
+        File file = new File(System.getProperty("user.dir") + "\\res\\icons\\save.png");
+        Image image = null;
+        try {
+            image = new Image(new FileInputStream(file));
+        } catch (Exception e) {
+        }
+        ImageView imageView = new ImageView(image);
+        Button button = new Button("", imageView);
+        button.setBackground(Background.EMPTY);
+        button.setBorder(Border.EMPTY);
+        imageView.setFitWidth(32);
+        imageView.setFitHeight(32);
+        return button;
+    }
+
+    public static Button createUndoButton() {
+        File file = new File(System.getProperty("user.dir") + "\\res\\icons\\undo.png");
+        Image image = null;
+        try {
+            image = new Image(new FileInputStream(file));
+        } catch (Exception e) {
+        }
+        ImageView imageView = new ImageView(image);
+        Button button = new Button("", imageView);
+        button.setBackground(Background.EMPTY);
+        button.setBorder(Border.EMPTY);
+        imageView.setFitWidth(32);
+        imageView.setFitHeight(32);
         return button;
     }
 

@@ -5,24 +5,27 @@
  */
 package com.core.products;
 
+import com.core.entity.DetailsView;
+import com.core.entity.SaveTableView;
+import com.core.entity.TableChange;
 import com.core.persistence.ExcludeSet;
 import com.core.persistence.Formatter;
 import com.core.persistence.IndexReader;
 import com.core.persistence.StorageManager;
 import com.core.persistence.TimeStamper;
-import com.core.entity.DetailsView;
+import com.gui.custom.PriceTableCell;
 import com.gui.listcells.ProductListCell;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 
@@ -41,16 +44,16 @@ public class ProductLayer {
         ObservableList<Product> list = FXCollections.observableArrayList();
         try {
             File file = StorageManager.getProductFile();
-            BufferedReader reader = new BufferedReader(new FileReader(file));
-            String line;
-            for (line = reader.readLine(); line != null; line = reader.readLine()) {
-                Product product = inflate(line);
-                if (product != null) {
-                    list.add(product);
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String line;
+                for (line = reader.readLine(); line != null; line = reader.readLine()) {
+                    Product product = inflate(line);
+                    if (product != null) {
+                        list.add(product);
+                    }
                 }
             }
-            reader.close();
-        } catch (Exception e) {
+        } catch (IOException e) {
         }
         return list;
     }
@@ -59,23 +62,21 @@ public class ProductLayer {
         try {
             File temp = new File("temp");
             File source = StorageManager.getProductFile();
-            BufferedReader reader = new BufferedReader(new FileReader(source));
-            PrintWriter writer = new PrintWriter(new FileWriter(temp));
-            String line;
-            for (line = reader.readLine(); line != null; line = reader.readLine()) {
-                int lineIndex = IndexReader.getLineIndex(line);
-                if (lineIndex == product.getPrimaryKey()) {
-                    writer.println(deflate(product));
-                } else {
-                    writer.println(line);
+            try (BufferedReader reader = new BufferedReader(new FileReader(source)); PrintWriter writer = new PrintWriter(new FileWriter(temp))) {
+                String line;
+                for (line = reader.readLine(); line != null; line = reader.readLine()) {
+                    int lineIndex = IndexReader.getLineIndex(line);
+                    if (lineIndex == product.getPrimaryKey()) {
+                        writer.println(deflate(product));
+                    } else {
+                        writer.println(line);
+                    }
                 }
             }
-            writer.close();
-            reader.close();
             source.delete();
             temp.renameTo(source);
 
-        } catch (Exception e) {
+        } catch (IOException e) {
         }
     }
 
@@ -87,24 +88,24 @@ public class ProductLayer {
         Product product = null;
         try {
             File file = StorageManager.getProductFile();
-            BufferedReader reader = new BufferedReader(new FileReader(file));
-            String line;
-            for (line = reader.readLine(); line != null; line = reader.readLine()) {
-                int index = IndexReader.getLineIndex(line);
-                if (index == primaryKey) {
-                    product = inflate(line);
-                    break;
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String line;
+                for (line = reader.readLine(); line != null; line = reader.readLine()) {
+                    int index = IndexReader.getLineIndex(line);
+                    if (index == primaryKey) {
+                        product = inflate(line);
+                        break;
+                    }
                 }
             }
-            reader.close();
 
-        } catch (Exception e) {
+        } catch (IOException e) {
         }
         return product;
     }
 
-    public static TableView<Product> buildTableView() {
-        TableView<Product> tableView = new TableView<>();
+    public static SaveTableView<Product> buildTableView() {
+        SaveTableView<Product> tableView = new SaveTableView<>(new ProductSaver());
 
         TableColumn<Product, Integer> keyColumn = new TableColumn<>("Primary Key");
         keyColumn.setCellValueFactory(new PropertyValueFactory<>("primaryKey"));
@@ -113,36 +114,62 @@ public class ProductLayer {
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         idColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         idColumn.setOnEditCommit((TableColumn.CellEditEvent<Product, String> t) -> {
-            ((Product) t.getTableView().getItems().get(t.getTablePosition().getRow())).setId(t.getNewValue());
+            Product p = ((Product) t.getTableView().getItems().get(t.getTablePosition().getRow()));
+            TableChange tc = new TableChange(p.getPrimaryKey(), "ID", p.getId(), t.getNewValue());
+            tableView.createDesyncRecord(tc, p);
+            p.setId(t.getNewValue());
         });
 
         TableColumn<Product, String> nameColumn = new TableColumn<>("Name");
-        idColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-        idColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        idColumn.setOnEditCommit((TableColumn.CellEditEvent<Product, String> t) -> {
-            ((Product) t.getTableView().getItems().get(t.getTablePosition().getRow())).setName(t.getNewValue());
+        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        nameColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        nameColumn.setOnEditCommit((TableColumn.CellEditEvent<Product, String> t) -> {
+            Product p = ((Product) t.getTableView().getItems().get(t.getTablePosition().getRow()));
+            TableChange tc = new TableChange(p.getPrimaryKey(), "NAME", p.getName(), t.getNewValue());
+            tableView.createDesyncRecord(tc, p);
+            p.setName(t.getNewValue());
         });
 
         TableColumn<Product, String> detailsColumn = new TableColumn<>("Details");
-        idColumn.setCellValueFactory(new PropertyValueFactory<>("details"));
-        idColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        idColumn.setOnEditCommit((TableColumn.CellEditEvent<Product, String> t) -> {
-            ((Product) t.getTableView().getItems().get(t.getTablePosition().getRow())).setDetails(t.getNewValue());
+        detailsColumn.setCellValueFactory(new PropertyValueFactory<>("details"));
+        detailsColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        detailsColumn.setOnEditCommit((TableColumn.CellEditEvent<Product, String> t) -> {
+            Product p = ((Product) t.getTableView().getItems().get(t.getTablePosition().getRow()));
+            TableChange tc = new TableChange(p.getPrimaryKey(), "DETAILS", p.getDetails(), t.getNewValue());
+            tableView.createDesyncRecord(tc, p);
+            p.setDetails(t.getNewValue());
         });
 
-        TableColumn<Product, String> purchasePriceColumn = new TableColumn<>("Purchase Price");
-        idColumn.setCellValueFactory(new PropertyValueFactory<>("purchasePrice"));
-        idColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        idColumn.setOnEditCommit((TableColumn.CellEditEvent<Product, String> t) -> {
-            ((Product) t.getTableView().getItems().get(t.getTablePosition().getRow())).setPurchasePrice(Formatter.formatPrice(t.getNewValue()));
+        TableColumn<Product, Double> purchasePriceColumn = new TableColumn<>("Purchase Price");
+        purchasePriceColumn.setCellValueFactory(new PropertyValueFactory<>("purchasePrice"));
+        purchasePriceColumn.setCellFactory((param) -> {
+            return new PriceTableCell(); //To change body of generated lambdas, choose Tools | Templates.
+        });
+        purchasePriceColumn.setOnEditCommit((TableColumn.CellEditEvent<Product, Double> t) -> {
+            Product p = ((Product) t.getTableView().getItems().get(t.getTablePosition().getRow()));
+            TableChange tc = new TableChange(p.getPrimaryKey(), "PURCHASE_PRICE", Formatter.formatPrice(p.getPurchasePrice()), Formatter.formatPrice(t.getNewValue()));
+            tableView.createDesyncRecord(tc, p);
+            p.setPurchasePrice((t.getNewValue()));
         });
 
-        TableColumn<Product, String> sellingPriceColumn = new TableColumn<>("Selling Price");
-        idColumn.setCellValueFactory(new PropertyValueFactory<>("sellingPrice"));
-        idColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        idColumn.setOnEditCommit((TableColumn.CellEditEvent<Product, String> t) -> {
-            ((Product) t.getTableView().getItems().get(t.getTablePosition().getRow())).setSellingPrice(Formatter.formatPrice(t.getNewValue()));
+        TableColumn<Product, Double> sellingPriceColumn = new TableColumn<>("Selling Price");
+        sellingPriceColumn.setCellValueFactory(new PropertyValueFactory<>("sellingPrice"));
+        sellingPriceColumn.setCellFactory((param) -> {
+            return new PriceTableCell(); //To change body of generated lambdas, choose Tools | Templates.
         });
+        sellingPriceColumn.setOnEditCommit((TableColumn.CellEditEvent<Product, Double> t) -> {
+            Product p = ((Product) t.getTableView().getItems().get(t.getTablePosition().getRow()));
+            TableChange tc = new TableChange(p.getPrimaryKey(), "SELLING_PRICE", Formatter.formatPrice(p.getSellingPrice()), Formatter.formatPrice(t.getNewValue()));
+            tableView.createDesyncRecord(tc, p);
+            p.setSellingPrice((t.getNewValue()));
+        });
+
+        keyColumn.setPrefWidth(93);
+        idColumn.setPrefWidth(148);
+        nameColumn.setPrefWidth(405);
+        detailsColumn.setPrefWidth(410);
+        purchasePriceColumn.setPrefWidth(110);
+        sellingPriceColumn.setPrefWidth(110);
 
         tableView.getColumns().addAll(keyColumn, idColumn, nameColumn, detailsColumn, purchasePriceColumn, sellingPriceColumn);
         return tableView;

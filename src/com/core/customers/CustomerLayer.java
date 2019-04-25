@@ -7,6 +7,8 @@ package com.core.customers;
 
 import com.core.debug.Debug;
 import com.core.entity.DetailsView;
+import com.core.entity.SaveTableView;
+import com.core.entity.TableChange;
 import com.core.persistence.ExcludeSet;
 import com.core.persistence.IndexReader;
 import com.core.persistence.StorageManager;
@@ -22,7 +24,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 
@@ -106,8 +107,8 @@ public class CustomerLayer {
         return customer;
     }
 
-    public static TableView<Customer> buildTableView() {
-        TableView<Customer> tableView = new TableView<>();
+    public static SaveTableView<Customer> buildTableView() {
+        SaveTableView<Customer> tableView = new SaveTableView<>(new CustomerSaver());
 
         TableColumn<Customer, Integer> keyColumn = new TableColumn<>("Primary Key");
         keyColumn.setCellValueFactory(new PropertyValueFactory<>("primaryKey"));
@@ -116,56 +117,80 @@ public class CustomerLayer {
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         idColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         idColumn.setOnEditCommit((TableColumn.CellEditEvent<Customer, String> t) -> {
-            ((Customer) t.getTableView().getItems().get(t.getTablePosition().getRow())).setId(t.getNewValue());
+            Customer c = ((Customer) t.getTableView().getItems().get(t.getTablePosition().getRow()));
+            TableChange tc = new TableChange(c.getPrimaryKey(), "ID", c.getId(), t.getNewValue());
+            tableView.createDesyncRecord(tc, c);
+            c.setId(t.getNewValue());
         });
 
         TableColumn<Customer, String> nameColumn = new TableColumn<>("Name");
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         nameColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         nameColumn.setOnEditCommit((TableColumn.CellEditEvent<Customer, String> t) -> {
-            ((Customer) t.getTableView().getItems().get(t.getTablePosition().getRow())).setName(t.getNewValue());
+            Customer c = ((Customer) t.getTableView().getItems().get(t.getTablePosition().getRow()));
+            TableChange tc = new TableChange(c.getPrimaryKey(), "NAME", c.getName(), t.getNewValue());
+            tableView.createDesyncRecord(tc, c);
+            c.setName(t.getNewValue());
         });
 
         TableColumn<Customer, String> streetColumn = new TableColumn<>("Street");
         streetColumn.setCellValueFactory(new PropertyValueFactory<>("street"));
         streetColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         streetColumn.setOnEditCommit((TableColumn.CellEditEvent<Customer, String> t) -> {
-            ((Customer) t.getTableView().getItems().get(t.getTablePosition().getRow())).setStreet(t.getNewValue());
+            Customer c = ((Customer) t.getTableView().getItems().get(t.getTablePosition().getRow()));
+            TableChange tc = new TableChange(c.getPrimaryKey(), "STREET", c.getStreet(), t.getNewValue());
+            tableView.createDesyncRecord(tc, c);
+            c.setStreet(t.getNewValue());
         });
 
         TableColumn<Customer, String> zipcodeColumn = new TableColumn<>("Zipcode");
         zipcodeColumn.setCellValueFactory(new PropertyValueFactory<>("zipcode"));
         zipcodeColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         zipcodeColumn.setOnEditCommit((TableColumn.CellEditEvent<Customer, String> t) -> {
-            ((Customer) t.getTableView().getItems().get(t.getTablePosition().getRow())).setZipcode(t.getNewValue());
+            Customer c = ((Customer) t.getTableView().getItems().get(t.getTablePosition().getRow()));
+            TableChange tc = new TableChange(c.getPrimaryKey(), "ZIPCODE", c.getZipcode(), t.getNewValue());
+            tableView.createDesyncRecord(tc, c);
+            c.setZipcode(t.getNewValue());
         });
 
         TableColumn<Customer, String> cityColumn = new TableColumn<>("City");
         cityColumn.setCellValueFactory(new PropertyValueFactory<>("city"));
         cityColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         cityColumn.setOnEditCommit((TableColumn.CellEditEvent<Customer, String> t) -> {
-            ((Customer) t.getTableView().getItems().get(t.getTablePosition().getRow())).setCity(t.getNewValue());
+            Customer c = ((Customer) t.getTableView().getItems().get(t.getTablePosition().getRow()));
+            TableChange tc = new TableChange(c.getPrimaryKey(), "CITY", c.getCity(), t.getNewValue());
+            tableView.createDesyncRecord(tc, c);
+            c.setCity(t.getNewValue());
         });
 
         TableColumn<Customer, String> emailColumn = new TableColumn<>("Email");
         emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
         emailColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         emailColumn.setOnEditCommit((TableColumn.CellEditEvent<Customer, String> t) -> {
-            ((Customer) t.getTableView().getItems().get(t.getTablePosition().getRow())).setEmail(t.getNewValue());
+            Customer c = ((Customer) t.getTableView().getItems().get(t.getTablePosition().getRow()));
+            TableChange tc = new TableChange(c.getPrimaryKey(), "EMAIL", c.getEmail(), t.getNewValue());
+            tableView.createDesyncRecord(tc, c);
+            c.setEmail(t.getNewValue());
         });
 
         TableColumn<Customer, String> phoneColumn = new TableColumn<>("Phone");
         phoneColumn.setCellValueFactory(new PropertyValueFactory<>("phone"));
         phoneColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         phoneColumn.setOnEditCommit((TableColumn.CellEditEvent<Customer, String> t) -> {
-            ((Customer) t.getTableView().getItems().get(t.getTablePosition().getRow())).setPhone(t.getNewValue());
+            Customer c = ((Customer) t.getTableView().getItems().get(t.getTablePosition().getRow()));
+            TableChange tc = new TableChange(c.getPrimaryKey(), "PHONE", c.getPhone(), t.getNewValue());
+            tableView.createDesyncRecord(tc, c);
+            c.setPhone(t.getNewValue());
         });
 
         TableColumn<Customer, String> mobileColumn = new TableColumn<>("Mobile");
         mobileColumn.setCellValueFactory(new PropertyValueFactory<>("mobile"));
         mobileColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         mobileColumn.setOnEditCommit((TableColumn.CellEditEvent<Customer, String> t) -> {
-            ((Customer) t.getTableView().getItems().get(t.getTablePosition().getRow())).setMobile(t.getNewValue());
+            Customer c = ((Customer) t.getTableView().getItems().get(t.getTablePosition().getRow()));
+            TableChange tc = new TableChange(c.getPrimaryKey(), "MOBILE", c.getMobile(), t.getNewValue());
+            tableView.createDesyncRecord(tc, c);
+            c.setMobile(t.getNewValue());
         });
 
         tableView.getColumns().addAll(keyColumn, idColumn, nameColumn, streetColumn, zipcodeColumn, cityColumn, emailColumn, phoneColumn, mobileColumn);
