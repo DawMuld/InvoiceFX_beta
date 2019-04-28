@@ -39,25 +39,34 @@ public class CustomerLayer {
 
     }
 
+
+
     public static ObservableList<Customer> readAll() {
         ObservableList<Customer> list = FXCollections.observableArrayList();
+        String line = "";
         try {
             File file = StorageManager.getCustomerFile();
             BufferedReader reader = new BufferedReader(new FileReader(file));
-            String line;
+
             for (line = reader.readLine(); line != null; line = reader.readLine()) {
                 Customer customer = inflate(line);
                 if (customer != null) {
                     list.add(customer);
+                } else {
+                    Debug.out(line);
                 }
             }
             reader.close();
 
         } catch (Exception e) {
+            Debug.out(e.getMessage() + "\t" + line);
             Debug.out(e.getStackTrace());
         }
+        ExcludeSet.removeExcluded(StorageManager.getDeletedCustomerFile(), list);
         return list;
     }
+
+
 
     public static void update(Customer customer) {
         try {
@@ -69,6 +78,7 @@ public class CustomerLayer {
             for (line = reader.readLine(); line != null; line = reader.readLine()) {
                 int lineIndex = IndexReader.getLineIndex(line);
                 if (lineIndex == customer.getPrimaryKey()) {
+                    customer.setLastMod(LocalDateTime.now());
                     writer.println(deflate(customer));
                 } else {
                     writer.println(line);
@@ -83,9 +93,13 @@ public class CustomerLayer {
 
     }
 
+
+
     public static void delete(Customer customer) {
         ExcludeSet.exclude(customer.getPrimaryKey(), StorageManager.getDeletedCustomerFile());
     }
+
+
 
     public static Customer find(int primaryKey) {
         Customer customer = null;
@@ -106,6 +120,8 @@ public class CustomerLayer {
         }
         return customer;
     }
+
+
 
     public static SaveTableView<Customer> buildTableView() {
         SaveTableView<Customer> tableView = new SaveTableView<>(new CustomerSaver());
@@ -197,6 +213,8 @@ public class CustomerLayer {
         return tableView;
     }
 
+
+
     public static ListView<Customer> buildListView() {
         ListView<Customer> listView = new ListView<>();
         listView.setCellFactory((param) -> {
@@ -205,10 +223,14 @@ public class CustomerLayer {
         return listView;
     }
 
+
+
     public static DetailsView<Customer> buildDetailsView() {
         return new CustomerDetailsView();
 
     }
+
+
 
     public static Customer inflate(String line) {
         String[] cells = line.split(";");
@@ -246,6 +268,8 @@ public class CustomerLayer {
         }
         return new Customer(primaryKey, createdAt, lastMod, id, name, street, zipcode, city, email, phone, mobile);
     }
+
+
 
     public static String deflate(Customer entry) {
         String line = String.valueOf(entry.getPrimaryKey());

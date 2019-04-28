@@ -35,6 +35,19 @@ public class SaveTableView<T> extends TableView<T> {
         oSet = new HashSet<>();
     }
 
+    public void styleTableView() {
+        this.setStyle("-fx-background-color: #3D3D3D;");
+        getColumns().forEach((t) -> {
+
+            t.setStyle("-fx-background-color: #3D3D3D;\n"
+                    + "-fx-text-fill: #F4F4F4;\n"
+                    + "-fx-border-color-right: #464646;\n"
+                    + "-fx-font-size: 14px; ");
+            
+        });
+        
+    }
+
     public void saveChanges() {
         if (!desyncSet.isEmpty() && tableSaver != null) {
             tableSaver.onSaveChanges(desyncSet.iterator());

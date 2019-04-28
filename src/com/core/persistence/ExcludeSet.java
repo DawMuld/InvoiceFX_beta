@@ -5,6 +5,7 @@
  */
 package com.core.persistence;
 
+import com.core.entity.Entity;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -16,12 +17,37 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import javafx.collections.ObservableList;
 
 /**
  *
  * @author daan-
  */
 public class ExcludeSet {
+
+    public static void removeExcluded(File file, ObservableList<? extends Entity> list) {
+        Set<Integer> set = getExcludeSet(file);
+        if (!set.isEmpty() && !list.isEmpty()) {
+            Iterator<Integer> i = set.iterator();
+            while (i.hasNext()) {
+                Entity entity = findByKey(list, i.next());
+                if (entity != null) {
+                    list.remove(entity);
+                }
+            }
+        }
+    }
+
+    private static Entity findByKey(List<? extends Entity> list, int key) {
+        Entity entity = null;
+        for (Entity item : list) {
+            if (item.getPrimaryKey() == key) {
+                entity = item;
+                break;
+            }
+        }
+        return entity;
+    }
 
     public static Set<Integer> getExcludeSet(File file) {
         Set<Integer> set = new HashSet<>();

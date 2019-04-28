@@ -6,8 +6,8 @@
 package com.core.entity;
 
 import java.time.LocalDateTime;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -17,49 +17,67 @@ import javafx.beans.property.SimpleObjectProperty;
  * @author daan-
  */
 public class Entity {
-    private final ReadOnlyIntegerProperty primaryKey;
+
+    private final IntegerProperty primaryKey;
     private final ReadOnlyObjectProperty<LocalDateTime> createdAt;
     private final ObjectProperty<LocalDateTime> lastMod;
-    
-    public Entity(int primaryKey){
+
+
+
+    public Entity(int primaryKey) {
         this.primaryKey = new SimpleIntegerProperty(primaryKey);
         this.createdAt = new SimpleObjectProperty<>(LocalDateTime.now());
         this.lastMod = new SimpleObjectProperty<>(LocalDateTime.now());
     }
-    
-    public Entity(int primaryKey, LocalDateTime createdAt, LocalDateTime lastMod){
+
+
+
+    public Entity(int primaryKey, LocalDateTime createdAt, LocalDateTime lastMod) {
         this.primaryKey = new SimpleIntegerProperty(primaryKey);
         this.createdAt = new SimpleObjectProperty<>(createdAt);
         this.lastMod = new SimpleObjectProperty<>(lastMod);
     }
-    
-    public int getPrimaryKey(){
+
+
+
+    public int getPrimaryKey() {
         return primaryKey.get();
     }
-    
-    public ReadOnlyIntegerProperty getPrimaryKeyProperty(){
+
+
+
+    public IntegerProperty getPrimaryKeyProperty() {
         return primaryKey;
     }
-    
-    public LocalDateTime getCreatedAt(){
+
+
+
+    public LocalDateTime getCreatedAt() {
         return createdAt.get();
     }
-    
-    public ReadOnlyObjectProperty<LocalDateTime> getCreatedAtProperty(){
+
+
+
+    public ReadOnlyObjectProperty<LocalDateTime> getCreatedAtProperty() {
         return createdAt;
     }
-    
-    public LocalDateTime getLastMod(){
+
+
+
+    public LocalDateTime getLastMod() {
         return lastMod.get();
     }
-    
-    public void setLastMod(LocalDateTime value){
+
+
+
+    public void setLastMod(LocalDateTime value) {
         lastMod.set(value);
     }
-    
-    public ObjectProperty<LocalDateTime> getLastModProperty(){
+
+
+
+    public ObjectProperty<LocalDateTime> getLastModProperty() {
         return lastMod;
     }
-    
-    
+
 }

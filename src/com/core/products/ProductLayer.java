@@ -55,6 +55,7 @@ public class ProductLayer {
             }
         } catch (IOException e) {
         }
+        ExcludeSet.removeExcluded(StorageManager.getDeletedProductFile(), list);
         return list;
     }
 
@@ -67,6 +68,7 @@ public class ProductLayer {
                 for (line = reader.readLine(); line != null; line = reader.readLine()) {
                     int lineIndex = IndexReader.getLineIndex(line);
                     if (lineIndex == product.getPrimaryKey()) {
+                        product.setLastMod(LocalDateTime.now());
                         writer.println(deflate(product));
                     } else {
                         writer.println(line);
@@ -170,8 +172,10 @@ public class ProductLayer {
         detailsColumn.setPrefWidth(410);
         purchasePriceColumn.setPrefWidth(110);
         sellingPriceColumn.setPrefWidth(110);
+        
 
         tableView.getColumns().addAll(keyColumn, idColumn, nameColumn, detailsColumn, purchasePriceColumn, sellingPriceColumn);
+        tableView.styleTableView();
         return tableView;
 
     }

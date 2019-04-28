@@ -5,9 +5,13 @@
  */
 package com.core.products;
 
+import com.core.entity.DataBase;
 import com.core.entity.DesyncObserver;
 import com.core.entity.SaveTableView;
+import com.gui.complex.SearchViewBundle;
+import com.gui.laf.Backgrounds;
 import com.gui.laf.ControlBuilder;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -26,6 +30,43 @@ public class ProductSearchView extends BorderPane implements DesyncObserver {
     private final TextField searchField;
     private final Button saveButton;
     private final Button undoButton;
+
+    public static SearchViewBundle<Product> createBundle() {
+        DataBase<Product> dataBase = new ProductDataBase(ProductLayer.readAll());
+        SaveTableView<Product> tableView = ProductLayer.buildTableView();
+        TextField searchField = ControlBuilder.createSearchTextField();
+        Button saveButton = ControlBuilder.createSaveButton();
+        Button undoButton = ControlBuilder.createUndoButton();
+        saveButton.setDisable(true);
+        saveButton.setOnAction((event) -> {
+            tableView.saveChanges();
+        });
+
+        undoButton.setDisable(true);
+        undoButton.setOnAction((event) -> {
+            tableView.undoChange();
+        });
+
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            dataBase.updateFilter(newValue);
+        });
+        tableView.setItems(dataBase.getItems());
+        tableView.setEditable(true);
+        tableView.registerDesyncObserver(new DesyncObserver() {
+            @Override
+            public void stateDesynced() {
+                saveButton.setDisable(false);
+                undoButton.setDisable(false);
+            }
+
+            @Override
+            public void stateSynced() {
+                saveButton.setDisable(true);
+                undoButton.setDisable(true);
+            }
+        });
+        return new SearchViewBundle(dataBase, tableView, searchField, saveButton, undoButton);
+    }
 
     public ProductSearchView() {
         this.dataBase = new ProductDataBase(ProductLayer.readAll());
@@ -69,7 +110,10 @@ public class ProductSearchView extends BorderPane implements DesyncObserver {
             System.out.println(String.valueOf(v2));
         });
 
-        setPrefWidth(1300);
+        setPrefWidth(1330);
+
+        setBackground(Backgrounds.createBlack2ImageBackground());
+        setPadding(new Insets(16));
 
     }
 

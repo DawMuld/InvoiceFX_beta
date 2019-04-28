@@ -5,6 +5,7 @@
  */
 package com.core.customers;
 
+import com.core.entity.DataBase;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 
@@ -12,10 +13,10 @@ import javafx.collections.transformation.FilteredList;
  *
  * @author daan-
  */
-public class CustomerDataBase {
+public class CustomerDataBase extends DataBase<Customer> {
 
     private final ObservableList<Customer> sourceList;
-    private FilteredList<Customer> filteredList;
+    private final FilteredList<Customer> filteredList;
 
     public CustomerDataBase(ObservableList<Customer> sourceList) {
         this.sourceList = sourceList;
@@ -23,10 +24,12 @@ public class CustomerDataBase {
         System.out.println("Customer source list size=" + sourceList.size());
     }
 
+    @Override
     public FilteredList<Customer> getItems() {
         return filteredList;
     }
 
+    @Override
     public void updateFilter(String value) {
         filteredList.setPredicate((customer) -> {
             if (value == null || value.isEmpty()) {
@@ -43,6 +46,11 @@ public class CustomerDataBase {
 
             return customer.getStreet().toLowerCase().contains(filter);
         });
+    }
+
+    @Override
+    public ObservableList<Customer> getSource() {
+        return sourceList;
     }
 
 }

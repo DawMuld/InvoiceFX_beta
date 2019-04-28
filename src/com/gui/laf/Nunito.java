@@ -16,19 +16,19 @@ import javafx.scene.text.Font;
 public class Nunito {
 
     public static Font bold(double size) {
-        return createFont("Nunito-Bold.ttf", size);
+        return createFont("Nunito-Bold.ttf", size+2);
     }
 
     public static Font medium(double size) {
-        return createFont("Nunito-SemiBold.ttf", size);
+        return createFont("Nunito-SemiBold.ttf", size+2);
     }
 
     public static Font thin(double size) {
-        return createFont("Nunito-Regular.ttf", size);
+        return createFont("Nunito-Regular.ttf", size+2);
     }
 
     public static Font regular(double size) {
-        return createFont("Nunito-ExtraLight.ttf", size);
+        return createFont("Nunito-ExtraLight.ttf", size+2);
     }
 
     private static Font createFont(String filename, double size) {

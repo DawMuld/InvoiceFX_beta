@@ -60,17 +60,21 @@ public class InvoiceCalculator {
 
     public static double itemResult(InvoiceItem item) {
         double q = (double) item.getQuantity();
-        double p = item.getUnitPrice() - (item.getDiscount() * item.getUnitPrice());
-        double tax = p * item.getTax();
-        double result = q * (p + tax);
-        return normalize(result);
+        double p = item.getUnitPrice() * q;
+        if(item.getDiscount() > 0){
+            p -=(item.getDiscount() * p);
+        }
+        p *= (1.0 + item.getTax());
+        return normalize(p);
     }
 
     public static double itemResultEx(InvoiceItem item) {
         double q = (double) item.getQuantity();
-        double p = item.getUnitPrice() - (item.getDiscount() * item.getUnitPrice());
-        double result = q * p;
-        return normalize(result);
+        double p = item.getUnitPrice() * q;
+        if(item.getDiscount() > 0){
+            p -= (item.getDiscount() * p);
+        }
+        return normalize(p);
     }
 
     public static double itemTax(InvoiceItem item) {
@@ -92,8 +96,9 @@ public class InvoiceCalculator {
     public static double totalTax(List<InvoiceItem> list) {
         double result = 0.0;
         for (InvoiceItem item : list) {
-            double itemTax = itemTax(item);
-            result += itemTax;
+            double itemResult = itemResultEx(item);
+            double itemTax = item.getTax() * itemResult;
+            result += normalize(itemTax);
         }
         return result;
     }

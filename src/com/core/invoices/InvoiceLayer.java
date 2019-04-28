@@ -5,12 +5,13 @@
  */
 package com.core.invoices;
 
+import com.core.debug.Debug;
+import com.core.entity.DetailsView;
 import com.core.persistence.ExcludeSet;
 import com.core.persistence.Formatter;
 import com.core.persistence.IndexReader;
 import com.core.persistence.StorageManager;
 import com.core.persistence.TimeStamper;
-import com.core.entity.DetailsView;
 import com.gui.listcells.InvoiceItemListCell;
 import com.gui.listcells.InvoiceListCell;
 import java.io.BufferedReader;
@@ -49,11 +50,14 @@ public class InvoiceLayer {
                 Invoice invoice = inflate(line);
                 if (invoice != null) {
                     list.add(invoice);
+                }else{
+                    Debug.out("Cannot parse line " + line);
                 }
             }
             reader.close();
         } catch (Exception e) {
         }
+        ExcludeSet.removeExcluded(StorageManager.getDeletedInvoiceFile(), list);
         return list;
     }
 
@@ -67,6 +71,7 @@ public class InvoiceLayer {
             for (line = reader.readLine(); line != null; line = reader.readLine()) {
                 int lineIndex = IndexReader.getLineIndex(line);
                 if (lineIndex == invoice.getPrimaryKey()) {
+                    invoice.setLastMod(LocalDateTime.now());
                     writer.println(deflate(invoice));
                 } else {
                     writer.println(line);
@@ -193,11 +198,14 @@ public class InvoiceLayer {
         try {
             companyKey = Integer.parseInt(cells[3]);
         } catch (NumberFormatException e) {
+            Debug.out("company key format exception");
         }
+        
         int customerKey = -1;
         try {
             customerKey = Integer.parseInt(cells[4]);
         } catch (NumberFormatException e) {
+            Debug.out("customer key format exception");
         }
         LocalDateTime invoiceDate = TimeStamper.parseLocalDateTime(cells[5]);
         ObservableList<InvoiceItem> list = FXCollections.observableArrayList();
